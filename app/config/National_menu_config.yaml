@@ -1,0 +1,10 @@
+NBS_MEMU:
+  monthly:
+    name: "月度数据"
+    dbcode: "hgyd"  # 宏观月度
+  quarterly:
+    name: "季度数据"
+    dbcode: "hgjd"  # 宏观季度
+  annual:
+    name: "年度数据"
+    dbcode: "hgnd"  # 宏观年度

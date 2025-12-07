@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant Design Pro - 完整功能版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <style>
+        :root { --ant-primary: #1890ff; --ant-sidebar-bg: #001529; --ant-sidebar-width: 256px; }
+        body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; height: 100vh; display: flex; overflow: hidden; color: rgba(0,0,0,0.85); }
+
+        /* 侧边栏 */
+        .ant-sider { width: var(--ant-sidebar-width); background: var(--ant-sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        .logo { height: 64px; line-height: 64px; padding-left: 24px; background: #002140; font-size: 18px; font-weight: 600; display: flex; align-items: center; }
+        .logo i { font-size: 22px; margin-right: 10px; color: var(--ant-primary); }
+        .menu-item { height: 44px; display: flex; align-items: center; padding: 0 24px; cursor: pointer; color: rgba(255,255,255,0.65); transition: 0.3s; }
+        .menu-item:hover { color: #fff; }
+        .menu-item.active { background: var(--ant-primary); color: #fff; }
+
+        /* 主内容 */
+        .layout-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ant-header { background: #fff; padding: 16px 24px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+        .content-scroll { padding: 24px; overflow-y: auto; flex: 1; }
+        .ant-card { background: #fff; border-radius: 4px; margin-bottom: 24px; padding: 24px; border: 1px solid #f0f0f0; position: relative; }
+
+        /* ================== 核心优化：树形选择器样式 ================== */
+        /* 模拟 Input 框 */
+        .fake-select-input {
+            border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; background: #fff; transition: all 0.3s; min-height: 38px;
+        }
+        .fake-select-input:hover { border-color: #40a9ff; }
+        .fake-select-input.active { border-color: #40a9ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+        .selected-text { color: #333; font-weight: 500; }
+        .placeholder-text { color: #bfbfbf; }
+
+        /* 树下拉面板 */
+        .tree-dropdown-panel {
+            border: 1px solid #d9d9d9; border-radius: 4px; margin-top: 4px;
+            background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-height: 300px; overflow-y: auto; display: none; /* 默认隐藏 */
+            animation: slideDown 0.2s ease-out;
+        }
+        .tree-dropdown-panel.show { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 模拟数据警告条 */
+        .mock-warning-bar {
+            background: #fffbe6; color: #faad14; font-size: 12px; padding: 5px 12px;
+            border-bottom: 1px solid #ffe58f; display: none; align-items: center; gap: 5px;
+        }
+
+        /* 树节点 */
+        .tree-node-row {
+            display: flex; align-items: center; padding: 6px 12px; cursor: pointer;
+            transition: background 0.2s; position: relative;
+        }
+        .tree-node-row:hover { background-color: #f5f5f5; }
+        .tree-node-row.selected { background-color: #e6f7ff; color: #1890ff; }
+
+        .tree-arrow { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #999; transition: transform 0.2s; margin-right: 2px; }
+        .tree-arrow:hover { color: #666; }
+        .tree-arrow.expanded { transform: rotate(90deg); }
+        .tree-arrow.leaf { visibility: hidden; } /* 叶子节点不显示箭头 */
+
+        .tree-children-group { padding-left: 20px; display: none; }
+        .tree-children-group.show { display: block; }
+
+        /* ================== 其他样式 ================== */
+        .list-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .offcanvas-end { width: 500px !important; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="ant-sider">
+    <div class="logo"><i class="fas fa-cubes"></i> 综合数据平台</div>
+    <div style="flex:1; padding-top:10px;">
+        <div class="menu-item active" onclick="switchTab('stats')"><i class="fas fa-chart-line me-2"></i> 统计数据</div>
+        <div class="menu-item" onclick="switchTab('name')"><i class="fas fa-font me-2"></i> 英文名生成</div>
+        <div class="menu-item" onclick="switchTab('ocr')"><i class="fas fa-camera me-2"></i> 图片转文字</div>
+    </div>
+</div>
+
+<div class="layout-main">
+    <div class="ant-header">
+        <div class="text-secondary small mb-1">首页 / 应用 / <span id="bread-current">统计数据</span></div>
+        <h5 class="m-0 fw-bold" id="page-title">统计数据查询</h5>
+    </div>
+
+    <div class="content-scroll">
+
+        <div id="view-stats" class="view-section active">
+            <div class="ant-card">
+                <h6 class="fw-bold mb-4">指标选择</h6>
+                <div class="row">
+                    <div class="col-md-8">
+                        <label class="form-label text-muted small">请选择统计指标 (支持展开请求):</label>
+
+                        <div class="position-relative">
+                            <div class="fake-select-input" id="tree-trigger" onclick="toggleTreePanel()">
+                                <span id="tree-display" class="placeholder-text">点击选择指标...</span>
+                                <i class="fas fa-chevron-down text-secondary small"></i>
+                            </div>
+
+                            <div class="tree-dropdown-panel" id="tree-panel">
+                                <div id="tree-mock-alert" class="mock-warning-bar">
+                                    <i class="fas fa-wifi"></i> 网络连接失败，当前展示目录为模拟数据
+                                </div>
+                                <div id="tree-root-container" class="p-2">
+                                    <div class="text-center text-muted small py-2"><i class="fas fa-spinner fa-spin"></i> 初始化中...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button class="btn btn-primary w-100" style="height: 38px;" onclick="handleSubmit('stats')">
+                            <i class="fas fa-search me-1"></i> 查询数据
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ant-card">
+                <h6 class="fw-bold mb-3 border-bottom pb-2">查询历史</h6>
+                <div id="list-stats"></div>
+            </div>
+        </div>
+
+        <div id="view-name" class="view-section">
+            <div class="ant-card">
+                <h6 class="fw-bold mb-4">AI 英文名生成</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">中文姓名</label>
+                        <input type="text" class="form-control" id="nameInput" placeholder="输入姓名...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">风格</label>
+                        <select class="form-select"><option>职场 (Official)</option><option>代码 (Variable)</option></select>
+                    </div>
+                    <div class="col-md-2 align-self-end">
+                        <button class="btn btn-primary w-100" onclick="handleSubmit('name')">生成</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ant-card"><div id="list-name"></div></div>
+        </div>
+
+        <div id="view-ocr" class="view-section">
+            <div class="ant-card">
+                <h6 class="fw-bold mb-4">图片文字识别</h6>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">上传图片</label>
+                        <input type="file" class="form-control" id="ocrInput">
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button class="btn btn-primary w-100" onclick="handleSubmit('ocr')">开始识别</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ant-card"><div id="list-ocr"></div></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="detailDrawer">
+    <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
+        <strong id="drawer-title">任务详情</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div id="drawer-body"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ==========================================
+    // 1. 网络层 (Smart Fetch) - 核心降级逻辑
+    // ==========================================
+    async function smartFetch(url, params) {
+        console.log(`%c[Network] Request: ${url}`, "color:blue", params);
+
+        try {
+            // 1. 尝试真实请求 (设置短超时模拟失败)
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 600); // 600ms 超时
+
+            // 这里因为没有真实后端，一定会 fail 或 404
+            const res = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(params),
+                signal: controller.signal
+            });
+            clearTimeout(id);
+            if(!res.ok) throw new Error("API Error");
+
+            return await res.json(); // 如果成功 (理论上走不到这)
+
+        } catch (e) {
+            console.log(`%c[Network] Failed (${e.message}) -> Using Mock`, "color:orange");
+            // 2. 失败后返回 Mock 数据，并打上 isMock 标记
+            return {
+                isMock: true,
+                data: getMockData(url, params)
+            };
+        }
+    }
+
+    // Mock 数据生成器
+    function getMockData(url, params) {
+        // --- 树结构 Mock ---
+        if (url.includes('/options/topTree')) {
+            return [
+                { id: 'm', name: '月度数据', hasChild: true },
+                { id: 'q', name: '季度数据', hasChild: true },
+                { id: 'y', name: '年度数据', hasChild: true }
+            ];
+        }
+        if (url.includes('/tree/children')) {
+            const pid = params.parentId;
+            if(pid === 'm') return [{id:'m-p', name:'价格指数', hasChild:true}, {id:'m-i', name:'工业生产', hasChild:true}];
+            if(pid === 'm-p') return [{id:'cpi', name:'居民消费价格 (CPI)', hasChild:false}, {id:'ppi', name:'工业出厂价格 (PPI)', hasChild:false}];
+            if(pid === 'm-i') return [{id:'ind', name:'工业增加值', hasChild:false}];
+            if(pid === 'q') return [{id:'gdp', name:'GDP核算', hasChild:true}];
+            if(pid === 'gdp') return [{id:'gdp-val', name:'GDP绝对额', hasChild:false}];
+            return [{id:'none', name:'暂无更多数据', hasChild:false}];
+        }
+
+        // --- 任务结果 Mock ---
+        if (url.includes('/task/stats')) return {
+            cols: ['日期', '数值', '同比'],
+            rows: [{d:'2023-01', v:102, r:'+2%'}, {d:'2023-02', v:105, r:'+3%'}]
+        };
+        if (url.includes('/task/name')) return [
+            {v: params.val + "Controller", t:"Java"}, {v: params.val + "_func", t:"Python"}
+        ];
+        if (url.includes('/task/ocr')) return "OCR Result:\nMock Text Content 123...";
+    }
+
+    // ==========================================
+    // 2. 树形组件逻辑 (Tree Logic)
+    // ==========================================
+    let currentSelectedValue = null;
+
+    // 页面加载初始化根节点
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTreeRoot();
+    });
+
+    async function loadTreeRoot() {
+        const container = document.getElementById('tree-root-container');
+        const alertBar = document.getElementById('tree-mock-alert');
+
+        // 请求根节点
+        const res = await smartFetch('/api/v1/options/topTree', {});
+
+        // 显示/隐藏 模拟数据警告
+        alertBar.style.display = res.isMock ? 'flex' : 'none';
+
+        container.innerHTML = '';
+        res.data.forEach(item => {
+            container.appendChild(createTreeNodeElement(item));
+        });
+    }
+
+    // 创建 DOM 节点
+    function createTreeNodeElement(item) {
+        // 容器
+        const wrapper = document.createElement('div');
+
+        // 1. 节点行 (Arrow + Text)
+        const row = document.createElement('div');
+        row.className = 'tree-node-row';
+        row.dataset.id = item.id;
+
+        // 箭头
+        const arrow = document.createElement('span');
+        arrow.className = `tree-arrow ${item.hasChild ? '' : 'leaf'}`;
+        arrow.innerHTML = '<i class="fas fa-caret-right"></i>';
+
+        // 文本
+        const text = document.createElement('span');
+        text.innerText = item.name;
+
+        row.appendChild(arrow);
+        row.appendChild(text);
+        wrapper.appendChild(row);
+
+        // 2. 子节点容器 (隐藏)
+        const childrenGroup = document.createElement('div');
+        childrenGroup.className = 'tree-children-group';
+        wrapper.appendChild(childrenGroup);
+
+        // --- 事件绑定 ---
+
+        // 点击箭头：展开/折叠
+        arrow.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if(!item.hasChild) return;
+            toggleNodeExpand(arrow, childrenGroup, item.id);
+        });
+
+        // 点击行：选中 (如果是目录，也尝试展开)
+        row.addEventListener('click', () => {
+            // 选中样式
+            document.querySelectorAll('.tree-node-row').forEach(el => el.classList.remove('selected'));
+            row.classList.add('selected');
+
+            // 赋值
+            if(!item.hasChild) {
+                // 叶子节点：选中并关闭面板
+                currentSelectedValue = item.name;
+                document.getElementById('tree-display').innerText = item.name;
+                document.getElementById('tree-display').className = 'selected-text';
+                document.getElementById('tree-trigger').classList.remove('active');
+                document.getElementById('tree-panel').classList.remove('show');
+            } else {
+                // 目录节点：只展开，不赋值最终查询
+                toggleNodeExpand(arrow, childrenGroup, item.id);
+            }
+        });
+
+        return wrapper;
+    }
+
+    async function toggleNodeExpand(arrowEl, groupEl, parentId) {
+        // 切换状态
+        const isExpanded = arrowEl.classList.contains('expanded');
+
+        if (isExpanded) {
+            // 收起
+            arrowEl.classList.remove('expanded');
+            groupEl.classList.remove('show');
+        } else {
+            // 展开
+            arrowEl.classList.add('expanded');
+            groupEl.classList.add('show');
+
+            // 如果没加载过，去请求 (先请求后端，失败走Mock)
+            if (groupEl.children.length === 0) {
+                arrowEl.innerHTML = '<i class="fas fa-circle-notch fa-spin small"></i>'; // Loading
+
+                const res = await smartFetch('/api/v1/tree/children', { parentId });
+
+                // 如果是 Mock 数据，再次确保 Mock 条显示 (逻辑上根节点加载时已显示，这里双保险)
+                if(res.isMock) document.getElementById('tree-mock-alert').style.display = 'flex';
+
+                arrowEl.innerHTML = '<i class="fas fa-caret-right"></i>'; // Restore
+
+                res.data.forEach(child => {
+                    groupEl.appendChild(createTreeNodeElement(child));
+                });
+            }
+        }
+    }
+
+    function toggleTreePanel() {
+        const panel = document.getElementById('tree-panel');
+        const trigger = document.getElementById('tree-trigger');
+        const isShow = panel.classList.contains('show');
+
+        if(isShow) {
+            panel.classList.remove('show');
+            trigger.classList.remove('active');
+        } else {
+            panel.classList.add('show');
+            trigger.classList.add('active');
+        }
+    }
+
+    // ==========================================
+    // 3. 通用页面逻辑
+    // ==========================================
+    let taskId = 100;
+    let TASK_DB = {};
+
+    // 切换 Tab
+    function switchTab(t) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-'+t).classList.add('active');
+
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        const map = {'stats':'统计数据', 'name':'英文名生成', 'ocr':'图片转文字'};
+        document.getElementById('bread-current').innerText = map[t];
+        document.getElementById('page-title').innerText = map[t] + '查询';
+    }
+
+    // 提交任务
+    async function handleSubmit(type) {
+        let title = "";
+        let params = {};
+
+        // 校验
+        if(type === 'stats') {
+            if(!currentSelectedValue) return alert("请先在下拉树中选择一个指标！");
+            title = `[数据] ${currentSelectedValue}`;
+            params.val = currentSelectedValue;
+        } else if (type === 'name') {
+            const v = document.getElementById('nameInput').value;
+            if(!v) return alert("请输入姓名");
+            title = `[命名] ${v}`;
+            params.val = v;
+        } else {
+            const v = document.getElementById('ocrInput').value;
+            if(!v) return alert("请选择文件");
+            title = "[OCR] 识别任务";
+        }
+
+        // 插入 Loading
+        const id = taskId++;
+        const container = document.getElementById(`list-${type}`);
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.id = `task-${id}`;
+        div.innerHTML = `<div><i class="fas fa-spinner fa-spin text-primary me-2"></i> ${title}</div><small class="text-muted">请求中...</small>`;
+        container.prepend(div);
+
+        // 请求后端 (失败 -> Mock)
+        const res = await smartFetch(`/api/v1/task/${type}`, params);
+
+        // 存储
+        TASK_DB[id] = { ...res, title, type, time: new Date().toLocaleTimeString() };
+
+        // 渲染结果
+        const badge = res.isMock ? `<span class="badge bg-warning text-dark ms-2 border border-warning" title="网络失败，使用模拟数据">Mock</span>` : `<span class="badge bg-success ms-2">Live</span>`;
+        document.getElementById(`task-${id}`).innerHTML = `
+            <div><i class="fas fa-check-circle text-success me-2"></i><b>${title}</b>${badge}</div>
+            <button class="btn btn-sm btn-link" onclick="openDetail(${id})">详情</button>
+        `;
+    }
+
+    function openDetail(id) {
+        const t = TASK_DB[id];
+        const body = document.getElementById('drawer-body');
+        document.getElementById('drawer-title').innerText = t.title;
+
+        let mockAlert = t.isMock ? `<div class="alert alert-warning py-2 mb-3 small"><i class="fas fa-exclamation-triangle"></i> 网络请求失败，当前为模拟结果。</div>` : '';
+
+        let content = '';
+        if(t.type === 'stats') {
+            content = `
+                <div class="d-flex justify-content-between mb-3 bg-light p-2 rounded">
+                    <span class="small text-secondary">Time: ${t.time}</span>
+                    <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> 导出</button>
+                </div>
+                <table class="table table-bordered table-sm">
+                    <thead><tr><th>日期</th><th>数值</th><th>同比</th></tr></thead>
+                    <tbody>${t.data.rows.map(r=>`<tr><td>${r.d}</td><td>${r.v}</td><td>${r.r}</td></tr>`).join('')}</tbody>
+                </table>
+            `;
+        } else if (t.type === 'name') {
+            content = `<ul class="list-group">${t.data.map(i=>`<li class="list-group-item d-flex justify-content-between"><b>${i.v}</b><span class="badge bg-light text-dark">${i.t}</span></li>`).join('')}</ul>`;
+        } else {
+            content = `<pre class="bg-light p-3 border">${t.data}</pre>`;
+        }
+
+        body.innerHTML = mockAlert + content;
+        const bsOffcanvas = new bootstrap.Offcanvas(document.getElementById('detailDrawer'));
+        bsOffcanvas.show();
+    }
+</script>
+</body>
+</html>
