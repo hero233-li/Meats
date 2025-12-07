@@ -1,8 +1,7 @@
 import hashlib
 
-from DeepTwo.APPConfig import AppConfig
-from DeepTwo.Cache import SimpleCache
-from DeepTwo.client import AIClient
+from ai_name_generator.Cache import SimpleCache
+from ai_name_generator.client import AIClient
 
 
 class NamingService:
@@ -10,7 +9,7 @@ class NamingService:
     def __init__(self,client:AIClient,cache: SimpleCache):
         self.client=client
         self.cache = cache
-    def get_suggestions(self,description:str,category:str,systemPrompt:str)->str:
+    def get_suggestions(self, description:str, category:str, system_prompt:str)->str:
         """核心业务"""
         # 1. 生成缓存 Key (比如用 MD5)
         raw_key = f"{category}:{description}"
@@ -20,7 +19,7 @@ class NamingService:
         if cached_result:
             print("[来自本地缓存 ⚡️]")
             return cached_result
-        system_prompt=systemPrompt
+        system_prompt=system_prompt
         user_prmpt=f"类型{category}\n 描述{description}"
         messages=[
             {"role":"system","content":system_prompt},

@@ -1,7 +1,7 @@
 import json
 import hashlib
 import os
-
+from pathlib import Path
 
 class SimpleCache:
     """
@@ -9,7 +9,8 @@ class SimpleCache:
     """
 
     def __init__(self, filename=".naming_cache.json"):
-        self.filename = filename
+        current_dir = Path(__file__).parent
+        self.filename = str(current_dir / filename)
         self.cache = self._load_cache()
 
     def _load_cache(self):

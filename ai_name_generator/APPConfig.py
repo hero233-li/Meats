@@ -17,7 +17,6 @@ class DeepSeekConfig:
 class NamingConfig:
     """子配置 专门管理业务相关参数"""
     prompt: str
-    count:str
 @dataclass
 class AppConfig:
     """主配置 聚合所有子配置"""
@@ -29,7 +28,7 @@ class AppConfig:
         """
                 专门负责去找钥匙的方法
                 """
-        # 强制定位到当前文件所在的目录 (DeepTwo)
+        # 强制定位到当前文件所在的目录 (ai_name_generator)
         current_dir = Path(__file__).parent
         env_path = current_dir / '.env'
 
@@ -39,7 +38,7 @@ class AppConfig:
         # 获取 Key
         key = os.getenv("DEEPSEEK_API_KEY")
         if not key:
-            raise ValueError("❌ 未找到 API Key! 请检查 DeepTwo/.env 文件是否配置正确")
+            raise ValueError("❌ 未找到 API Key! 请检查 ai_name_generator/.env 文件是否配置正确")
         return key
 
     @classmethod
@@ -49,9 +48,11 @@ class AppConfig:
         :param path:
         :return:
         """
-        print(f"Loading config from {path}")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(base_dir, "config.yaml")
+        print(f"Loading config from {full_path}")
         try:
-            with open(path,"r",encoding="utf-8") as f:
+            with open(full_path,"r",encoding="utf-8") as f:
                 # 把yaml读取为字典(dictionary)
                 raw_config = yaml.safe_load(f)
             # 提取数据并组装对象
@@ -66,9 +67,10 @@ class AppConfig:
                 model=ds_data.get("model","deepseek-chat"),
                 timeout=ds_data.get("timeout",10),
             )
+            count = int(ns_data.get("max_suggestions", 3))
+            default_prompt=f"你是一个资深 Python 程序员和命名专家。请根据用户提供的【中文描述】和【命名类型】，提供 {count}个专业的英文命名建议。要求：1. 风格遵循 Python PEP8 规范（如果类型是类名则用驼峰，变量/方法用下划线）。2. 格式严格如下，不要有任何 Markdown 标记，不要有开场白或结束语：name - (中文解释)3. 解释要简短，突出为什么这么命名（如：通俗、准确、动宾结构）。示例输出：calculate_total - (计算总和) 直白清晰，通用。sum_all_items - (求和所有项) 强调是对所有项操作。"
             ns_config=NamingConfig(
-                prompt=ns_data.get("default_prompt",''),
-                count=ns_data.get("max_suggestions",3),
+                prompt=default_prompt,
             )
             return cls(deepseek=ds_config, naming=ns_config)
         except FileNotFoundError:

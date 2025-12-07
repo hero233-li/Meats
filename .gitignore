@@ -9,4 +9,5 @@ __pycache__/
 .env
 .venv/
 .idea/
-DeepTwo/config.yaml
+ai_name_generator/config.yaml
+img2txt/doubao.yaml

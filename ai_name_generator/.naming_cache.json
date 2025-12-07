@@ -1,0 +1,9 @@
+{
+  "d461ddf9df88839a43ee2aead8f41c1b": "send_image_to_doubao - (发送图片给豆包) 动宾结构，清晰描述核心动作。\nupload_image_for_ocr - (上传图片进行OCR) 强调上传和OCR目的，技术准确。\nimage_to_text_conversion - (图片转文字) 直接描述转换过程，通俗易懂。\ndoubao_ocr_pipeline - (豆包OCR流程) 突出流程和OCR技术，专业。\nprocess_image_with_doubao - (用豆包处理图片) 强调处理动作和工具，完整。",
+  "cf6a6ba0e35a4272078fd3efcde03aa8": "image_to_text - (图片转文字) 直接描述核心功能。\nimage_ocr - (图片OCR) 使用技术术语，专业准确。\nimage_processing - (图片处理) 范围更广，为未来扩展预留空间。\nvision_to_text - (视觉转文字) 强调视觉输入，更具概括性。\nimg2txt - (图片转文字) 简洁缩写，符合技术命名习惯。",
+  "24f155b7fb9e06e74c2935b608cf26ea": "ImageToDoubaoText - (图片转豆包文字) 直接描述功能，清晰明了。\nDoubaoImageTranscriber - (豆包图片转录器) 准确描述角色和功能。\nImageTextExtractorForDoubao - (为豆包提取图片文字) 强调为特定服务提取。\nDoubaoOCRProcessor - (豆包OCR处理器) 使用技术术语OCR，专业准确。\nSendImageToDoubao - (发送图片至豆包) 动宾结构，描述核心动作。",
+  "552257969c1b4c80f0171775e7af3828": "send_image_to_doubao - (发送图片给豆包) 直接描述核心动作。\nconvert_image_to_text - (将图片转为文字) 突出功能转换过程。\nextract_text_from_image - (从图片提取文字) 强调提取操作，技术性强。\nprocess_image_with_doubao - (用豆包处理图片) 明确处理工具和对象。\ndispatch_image_for_ocr - (分发图片进行OCR) 使用专业术语OCR，暗示转文字。",
+  "59b2ecca7cc19341b5c3d586b73302a8": "ImageToTextProcessor - (图片转文字处理器) 专业术语，清晰表达功能。\nImageOCRService - (图片OCR服务) 使用OCR技术术语，准确专业。\nImageTextConverter - (图片文本转换器) 直接描述转换过程，通俗易懂。\nDoubaoImageParser - (豆包图片解析器) 结合特定产品名，上下文明确。\nVisionTextExtractor - (视觉文本提取器) 强调视觉处理和提取动作，技术感强。",
+  "c61a49d179d6d920c0a6d7a10f4f645a": "ImageToDoubaoService - (图片转豆包服务) 直接描述核心功能。\nDoubaoImageProcessor - (豆包图片处理器) 突出处理图片的角色。\nImageTextExtractionService - (图片文本提取服务) 准确描述技术动作。\nDoubaoOcrService - (豆包OCR服务) 使用通用技术术语，专业。\nSendImageForTranscription - (发送图片以转录) 动宾结构，清晰描述操作。",
+  "6186df140d7c4da58c6609322350d634": "send_image_to_doubao - (发送图片给豆包) 动宾结构，清晰描述核心动作。\nconvert_image_to_text - (将图片转换为文字) 强调功能转换，而非特定接收方。\nprocess_image_with_doubao - (使用豆包处理图片) 体现“处理”和“使用豆包”的协作关系。\nextract_text_from_image - (从图片中提取文字) 直接说明最终目的和来源。\nsubmit_image_for_ocr - (提交图片进行OCR识别) 使用专业术语OCR，明确技术实现。"
+}
